@@ -1,10 +1,21 @@
 CREATE TABLE IF NOT EXISTS gnss_qc_summary (
     qc_id SERIAL,
-    qc_epoch TIMESTAMP WITH TIME ZONE NOT NULL,
     qc_file VARCHAR(50),
+    qc_epoch TIMESTAMP WITH TIME ZONE NOT NULL,
+    qc_sampling NUMERIC(4,2),
+    qc_length 
 
-    site_marker VARCHAR(20),
-    site_domes VARCHAR(2),
+    station_marker VARCHAR(9),
+    station_domes VARCHAR(9),
+    station_receiver VARCHAR(20),
+    station_receiver_serial VARCHAR(20),
+    station_receiver_firmware VARCHAR(20),
+    station_antenna VARCHAR(20),
+    station_antenna_serial VARCHAR(20),
+    station_pos_x NUMERIC(11, 4),
+    station_pos_y NUMERIC(11, 4),
+    station_pos_z NUMERIC(11, 4),
+
     rtcm_package_id  INTEGER,
     rtcm_msg_type SMALLINT NOT NULL,
     mountpoint VARCHAR(50),
@@ -17,6 +28,6 @@ CREATE TABLE IF NOT EXISTS gnss_qc_summary (
     obs_lock_time_indicator INTEGER
 );
 
-SELECT create_hypertable('gnss_observations', 'obs_epoch', 'mountpoint', 2);
+SELECT create_hypertable('gnss_qc_summary', 'qc_epoch', 'site_marker', 2);
 CREATE INDEX ON gnss_qc_summary(mountpoint, sat_id, sat_signal, obs_epoch DESC);
 CREATE INDEX ON gnss_qc_summary(mountpoint, rtcm_msg_type, obs_epoch DESC);
