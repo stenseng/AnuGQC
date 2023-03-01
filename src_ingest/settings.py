@@ -7,7 +7,7 @@ Created on Thu Feb 16 10:01:21 2023
 @mail: lars@stenseng.net
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass

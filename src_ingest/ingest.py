@@ -9,14 +9,18 @@ Created on Thu Feb 16 09:34:14 2023
 
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from psycopg import connect, Error
+from psycopg import Connection, connect, Error
 
 from settings import DbSettings, IngestSettings
 
 
-def ingestAnubis(filename: str, dbSettings: DbSettings()) -> None:
+def ingestAnubisFile(filename: str, dbConnection: Connection()) -> None:
     pass
 
+
+def ingestAnubisFiles(dbSettings: DbSettings(), ingestSettings: IngestSettings()) -> None:
+    with connect() as conn:
+        pass
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -49,13 +53,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = ConfigParser()
-    config.read_file(args.config, mode="r"))
+    config.read_file(args.config, mode="r")
+    
+    dbSettings = DbSettings()
     dbSettings.host = config["DbSettings"]["host"]
     dbSettings.port = config.getint("DbSettings", "port")
     dbSettings.database = config["DbSettings"]["database"]
     dbSettings.user = config["DbSettings"]["user"]
     dbSettings.password = config["DbSettings"]["password"]
 
+    ingestSettings = IngestSettings()
     ingestSettings.fileTypes = list(
         map(str.strip, config["ingestSettings"]["fileTypes"].split(","))
     )
