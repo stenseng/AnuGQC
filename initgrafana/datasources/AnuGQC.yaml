@@ -22,7 +22,7 @@ datasources:
     isDefault: true
     readOnly: true
     jsonData:
-      postgresVersion: 1200
+      postgresVersion: 1400
       sslmode: disable
       timescaledb: true
       tlsAuth: false

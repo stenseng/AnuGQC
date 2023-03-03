@@ -20,20 +20,9 @@ CREATE TABLE IF NOT EXISTS gnss_qc_summary (
     station_antenna_ecc_z NUMERIC(7, 4),
     station_pos_x NUMERIC(11, 4),
     station_pos_y NUMERIC(11, 4),
-    station_pos_z NUMERIC(11, 4),
-
-    rtcm_package_id  INTEGER,
-    rtcm_msg_type SMALLINT NOT NULL,
-    mountpoint VARCHAR(50),
-    sat_id CHAR(4),
-    sat_signal CHAR(3),
-    obs_code NUMERIC(13, 10),
-    obs_phase NUMERIC(14, 11),
-    obs_doppler NUMERIC(8, 4),
-    obs_snr NUMERIC(6, 4),
-    obs_lock_time_indicator INTEGER
+    station_pos_z NUMERIC(11, 4)
 );
 
-SELECT create_hypertable('gnss_qc_summary', 'qc_epoch', 'site_marker', 2);
-CREATE INDEX ON gnss_qc_summary(mountpoint, sat_id, sat_signal, obs_epoch DESC);
-CREATE INDEX ON gnss_qc_summary(mountpoint, rtcm_msg_type, obs_epoch DESC);
+SELECT create_hypertable('gnss_qc_summary', 'qc_epoch', 'station_marker', 2);
+-- CREATE INDEX ON gnss_qc_summary(station_marker, sat_id, sat_signal, obs_epoch DESC);
+-- CREATE INDEX ON gnss_qc_summary(station_marker, rtcm_msg_type, obs_epoch DESC);
