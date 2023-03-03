@@ -1,8 +1,9 @@
 version: "3.9"
 
 volumes:
-  localtimescaledb:
-  localgrafana:
+    localtimescaledb:
+    localgrafana:
+
 
 services:
 
@@ -22,7 +23,7 @@ services:
         volumes:
             - ./initdb/10-gnss_qc_summary.sql:/docker-entrypoint-initdb.d/10-gnss_qc_summary.sql
             - type: volume
-              source: localtimescaledb      # Update this to an appropriate path
+              source: localtimescaledb # Update this to an appropriate path
               target: /var/lib/postgresql/data
         logging:
             driver: "local"
@@ -49,7 +50,7 @@ services:
               target: /etc/grafana/provisioning
               read_only: true
             - type: volume
-              source: localgrafana      # Update this to an appropriate path
+              source: localgrafana # Update this to an appropriate path
               target: /var/lib/grafana
         logging:
             driver: "local"
@@ -58,19 +59,19 @@ services:
                 max-size: "10m"
         restart: unless-stopped
 
-#    ingest:
-#        build:
-#            context: .
-#            dockerfile: Dockerfile-ingest
-#        depends_on:
-#            - timescaledb
-#        volumes:
-#            - type: bind
-#              source: ./config
-#              target: /app/config
-#        logging:
-#            driver: "local"
-#            options:
-#                max-file: "10"
-#                max-size: "10m"
-#        restart: unless-stopped
+    ingest:
+        build:
+            context: .
+            dockerfile: Dockerfile-ingest
+        depends_on:
+            - timescaledb
+        volumes:
+            - type: bind
+              source: ./config
+              target: /app/config
+        logging:
+            driver: "local"
+            options:
+                max-file: "10"
+                max-size: "10m"
+        restart: unless-stopped

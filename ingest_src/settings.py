@@ -12,16 +12,16 @@ from dataclasses import dataclass, field
 
 @dataclass
 class DbSettings:
-    host: str = None
-    port: int = None
-    database: str = None
-    user: str = None
-    password: str = None
+    host: str = ""
+    port: int = -1
+    database: str = ""
+    user: str = ""
+    password: str = ""
 
 
 @dataclass
 class IngestSettings:
     fileTypes: list[str] = field(default_factory=lambda: [])
     paths: list[str] = field(default_factory=lambda: [])
-    recursive: bool = None
-    overwrite: bool = None
+    recursive: bool = False
+    overwrite: bool = False

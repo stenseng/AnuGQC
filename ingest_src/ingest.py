@@ -9,18 +9,21 @@ Created on Thu Feb 16 09:34:14 2023
 
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from psycopg import Connection, connect, Error
-
+from psycopg_pool import ConnectionPool
 from settings import DbSettings, IngestSettings
 
-
-def ingestAnubisFile(filename: str, dbConnection: Connection()) -> None:
-    pass
+dbPool = ConnectionPool("", open=False)
 
 
-def ingestAnubisFiles(dbSettings: DbSettings(), ingestSettings: IngestSettings()) -> None:
-    with connect() as conn:
-        pass
+def main(dbSettings: DbSettings, ingestSettings: IngestSettings):
+    print(dbPool.conninfo)
+    dbPool.conninfo = (
+        f"host={dbSettings.host} port={dbSettings.port} dbname={dbSettings.database} "
+        + f"user={dbSettings.user} password={dbSettings.password}"
+    )
+    dbPool.open()
+    dbPool.close()
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -53,8 +56,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = ConfigParser()
-    config.read_file(args.config, mode="r")
-    
+    config.read(args.config)
+
     dbSettings = DbSettings()
     dbSettings.host = config["DbSettings"]["host"]
     dbSettings.port = config.getint("DbSettings", "port")
@@ -64,14 +67,14 @@ if __name__ == "__main__":
 
     ingestSettings = IngestSettings()
     ingestSettings.fileTypes = list(
-        map(str.strip, config["ingestSettings"]["fileTypes"].split(","))
+        map(str.strip, config["IngestSettings"]["fileTypes"].split(","))
     )
     if ingestSettings.fileTypes == [""]:
         ingestSettings.fileTypes = []
     ingestSettings.paths = list(
-        map(str.strip, config["ingestSettings"]["paths"].split(","))
+        map(str.strip, config["IngestSettings"]["paths"].split(","))
     )
     if ingestSettings.paths == [""]:
         ingestSettings.paths = []
-    ingestSettings.recursive = config.getboolean("ingestSettings", "recursive")
-    ingestSettings.overwrite = config.getboolean("ingestSettings", "overwrite")
+    ingestSettings.recursive = config.getboolean("IngestSettings", "recursive")
+    ingestSettings.overwrite = config.getboolean("IngestSettings", "overwrite")
