@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 import logging
 from psycopg_pool import ConnectionPool
-from sys import stderr
 from time import sleep
 
 from settings import DbSettings, IngestSettings
@@ -19,13 +18,14 @@ from anubis import ingestAnubisFiles
 
 
 def main(dbSettings: DbSettings, ingestSettings: IngestSettings):
-    logging.debug("Enter main")
     dbPool = ConnectionPool(
         f"host={dbSettings.host} port={dbSettings.port} dbname={dbSettings.database} "
         + f"user={dbSettings.user} password={dbSettings.password}"
     )
-    logging.debug(f"{dbPool.conninfo}")
-    ingestAnubisFiles(ingestSettings, dbPool)
+    logger.debug(f"Databasepool created.")
+    for _ in range(1000):
+        ingestAnubisFiles(ingestSettings, dbPool)
+        sleep(0.1)
 
 
 if __name__ == "__main__":
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     elif args.verbosity > 2:
         logLevel = logging.DEBUG
     logging.basicConfig(level=logLevel, format="%(asctime)s;%(levelname)s;%(message)s")
-    logging.debug("Ready to read config file")
+    logger = logging.getLogger("AnuGQC")
 
     config = ConfigParser()
     config.read(args.config)
@@ -98,6 +98,6 @@ if __name__ == "__main__":
         ingestSettings.paths = []
     ingestSettings.recursive = config.getboolean("IngestSettings", "recursive")
     ingestSettings.overwrite = config.getboolean("IngestSettings", "overwrite")
+    logger.debug("Configuration complete")
 
-    logging.debug("Ready to run main")
     main(dbSettings, ingestSettings)
