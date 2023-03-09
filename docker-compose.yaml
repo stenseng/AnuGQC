@@ -19,17 +19,17 @@ services:
             # - TS_TUNE_MEMORY=4GB
             # - TS_TUNE_MAX_CONNS=200
         ports:
-            - "5432:5432"
+            - 5432:5432
         volumes:
             - ./initdb/10-gnss_qc_summary.sql:/docker-entrypoint-initdb.d/10-gnss_qc_summary.sql
             - type: volume
               source: localtimescaledb # Update this to an appropriate path
               target: /var/lib/postgresql/data
         logging:
-            driver: "local"
+            driver: local
             options:
                 max-file: "10"
-                max-size: "10m"
+                max-size: 10m
         restart: unless-stopped
 
     grafana:
@@ -43,7 +43,7 @@ services:
         depends_on:
             - timescaledb
         ports:
-            - "3000:3000"
+            - 3000:3000
         volumes:
             - type: bind
               source: ./initgrafana
@@ -53,10 +53,10 @@ services:
               source: localgrafana # Update this to an appropriate path
               target: /var/lib/grafana
         logging:
-            driver: "local"
+            driver: local
             options:
                 max-file: "10"
-                max-size: "10m"
+                max-size: 10m
         restart: unless-stopped
 
     ingest:
@@ -73,8 +73,8 @@ services:
               source: ./testdata
               target: /app/qcdata
         logging:
-            driver: "local"
+            driver: local
             options:
                 max-file: "10"
-                max-size: "10m"
-        restart: unless-stopped
+                max-size: 10m
+        restart: on-failure:5

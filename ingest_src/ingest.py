@@ -23,9 +23,7 @@ def main(dbSettings: DbSettings, ingestSettings: IngestSettings):
         + f"user={dbSettings.user} password={dbSettings.password}"
     )
     logger.debug(f"Databasepool created.")
-    for _ in range(1000):
-        ingestAnubisFiles(ingestSettings, dbPool)
-        sleep(0.1)
+    ingestAnubisFiles(ingestSettings, dbPool)
 
 
 if __name__ == "__main__":

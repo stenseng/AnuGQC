@@ -7,15 +7,14 @@ Created on Thu Mar 3 09:55:14 2023
 @mail: lars@stenseng.net
 """
 
-from glob import iglob
-import logging
+from logging import getLogger
 from pathlib import Path, PurePath
-from time import sleep
+from psycopg import sql
 from psycopg_pool import ConnectionPool
 
 from settings import IngestSettings
 
-logger = logging.getLogger("AnuGQC.anubis")
+logger = getLogger("AnuGQC.anubis")
 
 
 def ingestAnubisFiles(ingestSettings: IngestSettings, dbPool: ConnectionPool) -> None:
@@ -34,14 +33,38 @@ def ingestAnubisFiles(ingestSettings: IngestSettings, dbPool: ConnectionPool) ->
 
 
 def ingestAnubisFile(
-    qcFile: Path, ingestSettings: IngestSettings, dbPool: ConnectionPool
+    qcFilePath: Path, ingestSettings: IngestSettings, dbPool: ConnectionPool
 ) -> None:
     with dbPool.connection() as dbConn:
-        qcFilename = PurePath(qcFile).stem
-        logger.debug(f"Processing qcfile: {qcFilename}")
-        dbConn.execute(
-            "INSERT INTO gnss_qc_summary"
-            "(qc_epoch, qc_file, station_marker) VALUES (NOW(), %s, %s)",
-            (qcFilename, "BUDP"),
-        )
-        dbConn.commit()
+        with dbConn.cursor() as dbCur:
+            qcFilename = PurePath(qcFilePath).stem
+            logger.debug(f"Processing qcfile: {qcFilename}")
+            dbCur.execute(
+                "SELECT COUNT(qc_file) FROM gnss_qc_summary WHERE qc_file=%s;",
+                (qcFilename,),
+            )
+            existing_records = dbCur.fetchall()[0][0]
+            logger.debug(f"{qcFilename} occured {existing_records} times.")
+            if existing_records > 0:
+                if ingestSettings.overwrite:
+                    logger.debug(f"{qcFilename} exists and will be overwritten.")
+                    dbCur.execute(
+                        "DELETE FROM gnss_qc_summary WHERE qc_file=%s;",
+                        (qcFilename,),
+                    )
+                    existing_records = 0
+                    dbConn.commit()
+                else:
+                    logger.debug(f"{qcFilename} exists and will not be overwritten.")
+            if existing_records == 0:
+                with open(qcFilePath) as qcFile:
+                    qcData = qcFile.read().splitlines()
+                logger.debug(f"{len(qcData)}")
+                if len(qcData) > 0:
+                    logger.debug(f"{qcData[0:5]}")
+                dbCur.execute(
+                    "INSERT INTO gnss_qc_summary"
+                    "(qc_epoch, qc_file, station_marker) VALUES (NOW(), %s, %s);",
+                    (qcFilename, "BUDP"),
+                )
+                dbConn.commit()
