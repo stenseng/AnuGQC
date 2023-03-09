@@ -59,12 +59,28 @@ def ingestAnubisFile(
             if existing_records == 0:
                 with open(qcFilePath) as qcFile:
                     qcData = qcFile.read().splitlines()
-                logger.debug(f"{len(qcData)}")
                 if len(qcData) > 0:
                     logger.debug(f"{qcData[0:5]}")
-                dbCur.execute(
-                    "INSERT INTO gnss_qc_summary"
-                    "(qc_epoch, qc_file, station_marker) VALUES (NOW(), %s, %s);",
-                    (qcFilename, "BUDP"),
-                )
+                    (query, values) = extractQcSummary(qcFilename, qcData)
+                    logger.debug(f"SQL query: {query.as_string(dbCur)}")
+                    dbCur.execute(query, values)
+                # dbCur.execute(
+                #     "INSERT INTO gnss_qc_summary"
+                #     "(qc_epoch, qc_file, station_marker) VALUES (NOW(), %s, %s);",
+                #     (qcFilename, "BUDP"),
+                # )
                 dbConn.commit()
+
+
+def extractQcSummary(
+    qcFilename: str, qcData: list[str]
+) -> tuple[sql.Composed, list[str]]:
+    qcFields = ["qc_file", "station_marker"]
+    query = sql.SQL(
+        "INSERT INTO gnss_qc_summary (qc_epoch, {}) VALUES (NOW(), {})"
+    ).format(
+        sql.SQL(", ").join(map(sql.Identifier, qcFields)),
+        sql.SQL(", ").join(sql.Placeholder() * len(qcFields)),
+    )
+    values = [qcFilename, "BUDP"]
+    return (query, values)
